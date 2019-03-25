@@ -119,6 +119,24 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.UnitTests.Utility
             ValidateTestMethodProperties(testName, fullyQualifiedName, expectedClassName);
         }
 
+        [TestMethod]
+        public void ToTestElementShouldShouldAssignTraitsOfUnitTestElement()
+        {
+            TestPlatformObjectModel.TestCase testCase = CreateTestCase("TestCaseWithTraits");
+            TestPlatformObjectModel.TestResult result = new TestPlatformObjectModel.TestResult(testCase);
+
+            testCase.Traits.Add("Trait1", "Value1");
+            testCase.Traits.Add("Trait2", "Value2");
+
+            ITestElement unitTestElement = Converter.ToTestElement(testCase.Id, Guid.Empty, Guid.Empty, testCase.DisplayName, TrxLoggerConstants.UnitTestType, testCase);
+
+            // They only way to check for TestProperties is to cast the ITestElement object to UnitTestElement
+            Assert.AreEqual(typeof(UnitTestElement), unitTestElement.GetType());
+
+            var expected = new[] { new TestPropertyItem("Trait1", "Value1"), new TestPropertyItem("Trait2", "Value2") };
+            CollectionAssert.AreEqual(expected, ((UnitTestElement)unitTestElement).TestProperties.OrderBy(p => p.Key).ToArray());
+        }
+
         private void ValidateTestMethodProperties(string testName, string fullyQualifiedName, string expectedClassName)
         {
             TestPlatformObjectModel.TestCase testCase = CreateTestCase(fullyQualifiedName);

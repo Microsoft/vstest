@@ -30,6 +30,7 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.ObjectModel
         protected TestExecId executionId;
         protected TestExecId parentExecutionId;
         protected TestCategoryItemCollection testCategories;
+        protected TestPropertyItemCollection testProperties;
         protected TestListCategoryId catId;
 
         public TestElement(Guid id, string name, string adapter)
@@ -161,6 +162,16 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.ObjectModel
             }
         }
 
+        public TestPropertyItemCollection TestProperties
+        {
+            get { return this.testProperties; }
+            set
+            {
+                EqtAssert.ParameterNotNull(value, "TestProperties");
+                this.testProperties = value;
+            }
+        }
+
         /// <summary>
         /// Gets the adapter name.
         /// </summary>
@@ -245,6 +256,7 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.ObjectModel
             this.executionId = TestExecId.Empty;
             this.parentExecutionId = TestExecId.Empty;
             this.testCategories = new TestCategoryItemCollection();
+            this.testProperties = new TestPropertyItemCollection();
             this.isRunnable = true;
             this.catId = TestListCategoryId.Uncategorized;
         }

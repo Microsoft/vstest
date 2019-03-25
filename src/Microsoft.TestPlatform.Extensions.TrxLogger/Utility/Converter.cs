@@ -54,6 +54,11 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.Utility
                 testElement.TestCategories.Add(testCategory);
             }
 
+            foreach (var trait in rockSteadyTestCase.Traits)
+            {
+                testElement.TestProperties.Add(trait.Name, trait.Value);
+            }
+
             return testElement;
         }
 
