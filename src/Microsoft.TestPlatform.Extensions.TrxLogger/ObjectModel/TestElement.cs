@@ -235,6 +235,7 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.ObjectModel
             h.SaveSimpleField(element, "@priority", this.priority, DefaultPriority);
             h.SaveSimpleField(element, "Owners/Owner/@name", this.owner, string.Empty);
             h.SaveObject(this.testCategories, element, "TestCategory", parameters);
+            h.SaveObject(this.testProperties, element, "Properties", parameters);
 
             if (this.executionId != null)
                 h.SaveGuid(element, "Execution/@id", this.executionId.Id);
