@@ -326,6 +326,10 @@
     <value>  Test Messages:
 {0}</value>
   </data>
+  <data name="TestResultTimerMessagesFormat" xml:space="preserve">
+    <value>  Test Timers:
+{0}</value>
+  </data>
   <data name="UnexpectedTypeOfProperty" xml:space="preserve">
     <value>The test property type '{0}' of property '{1}' is not supported. Use one of the supported property type (primitive types, uri, string, string[]) and try again. </value>
   </data>

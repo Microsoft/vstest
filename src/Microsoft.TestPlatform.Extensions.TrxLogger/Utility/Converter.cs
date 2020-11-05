@@ -123,6 +123,11 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.Utility
             // Save result attachments to target location.
             UpdateTestResultAttachments(rockSteadyTestResult, testResult, testRun, trxFileDirectory, true);
 
+            if (rockSteadyTestResult.Timers != null)
+            {
+                testResult.AddTimerEntries(rockSteadyTestResult.Timers);
+            }
+
             return testResult;
         }
 

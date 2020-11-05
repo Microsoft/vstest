@@ -33,6 +33,7 @@ namespace Microsoft.VisualStudio.TestPlatform.ObjectModel
             this.TestCase = testCase;
             this.Messages = new Collection<TestResultMessage>();
             this.Attachments = new Collection<AttachmentSet>();
+            this.Timers = new Collection<TimerResult>();
 
             // Default start and end time values for a test result are initialized to current time stamp
             // to maintain compatibility.
@@ -85,6 +86,12 @@ namespace Microsoft.VisualStudio.TestPlatform.ObjectModel
         /// </summary>
         [DataMember]
         public Collection<TestResultMessage> Messages { get; private set; }
+
+        /// <summary>
+        /// Gets the named timers for TestResult, if any.
+        /// </summary>
+        [DataMember]
+        public Collection<TimerResult> Timers { get; private set; }
 
         /// <summary>
         /// Gets or sets test result ComputerName.
@@ -176,6 +183,27 @@ namespace Microsoft.VisualStudio.TestPlatform.ObjectModel
                     CultureInfo.CurrentUICulture,
                     Resources.Resources.TestResultTextMessagesFormat,
                     testMessages.ToString());
+            }
+
+            if (this.Timers.Any())
+            {
+                // Timer name, start-time, and duration
+                const string testResultTimerFormat = "  {0} : {1} : {2}";
+                var timerMessages = new StringBuilder();
+                foreach (var timer in this.Timers)
+                {
+                    timerMessages.AppendFormat(
+                        CultureInfo.CurrentUICulture,
+                        testResultTimerFormat,
+                        timer.Name,
+                        timer.StartTime.ToString("O"),
+                        timer.Duration.ToString("c"));
+                }
+
+                result.AppendLine();
+                result.AppendFormat(CultureInfo.CurrentUICulture,
+                    Resources.Resources.TestResultTimerMessagesFormat,
+                    timerMessages);
             }
 
             return result.ToString();
@@ -306,6 +334,43 @@ namespace Microsoft.VisualStudio.TestPlatform.ObjectModel
         {
             get;
             private set;
+        }
+    }
+
+    /// <summary>
+    /// Named timer within the Timers collection of a TestResult.
+    /// </summary>
+    /// <remarks>
+    /// Class is immutable.
+    /// </remarks>
+    [DataContract]
+    public class TimerResult
+    {
+        /// <summary>
+        /// Gets the name of the timer.
+        /// </summary>
+        [DataMember]
+        public string Name { get; }
+
+        /// <summary>
+        /// Gets the time the timer was started.
+        /// </summary>
+        [DataMember]
+        public DateTimeOffset StartTime { get; }
+
+        /// <summary>
+        /// Gets the duration of the timer.
+        /// </summary>
+        [DataMember]
+        public TimeSpan Duration { get; }
+
+        public TimerResult(string name,
+            DateTimeOffset startTime,
+            TimeSpan duration)
+        {
+            this.Name = name;
+            this.StartTime = startTime;
+            this.Duration = duration;
         }
     }
 
