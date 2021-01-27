@@ -61,14 +61,20 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
         /// </summary>
         /// 
         /// <param name="testSessionInfo">The test session info.</param>
+        /// <param name="runSettings">The run settings.</param>
         /// <param name="debugEnabledForTestSession">
         /// A flag indicating if debugging should be enabled or not.
         /// </param>
-        public ProxyExecutionManager(TestSessionInfo testSessionInfo, bool debugEnabledForTestSession)
+        public ProxyExecutionManager(
+            TestSessionInfo testSessionInfo,
+            string runSettings,
+            bool debugEnabledForTestSession)
         {
             // Filling in test session info and proxy information.
             this.testSessionInfo = testSessionInfo;
-            this.ProxyOperationManager = TestSessionPool.Instance.TakeProxy(this.testSessionInfo);
+            this.ProxyOperationManager = TestSessionPool.Instance.TakeProxy(
+                this.testSessionInfo,
+                runSettings);
             // This should be set to enable debugging when we have test session info available.
             this.debugEnabledForTestSession = debugEnabledForTestSession;
 
@@ -284,7 +290,13 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
         /// <inheritdoc/>
         public void Close()
         {
-            this.ProxyOperationManager.Close();
+            if (this.testSessionInfo == null)
+            {
+                this.ProxyOperationManager.Close();
+                return;
+            }
+
+            TestSessionPool.Instance.ReturnProxy(this.testSessionInfo, this.ProxyOperationManager.Id);
         }
 
         /// <inheritdoc/>
@@ -302,12 +314,6 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
         /// <inheritdoc/>
         public void HandleTestRunComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection<AttachmentSet> runContextAttachments, ICollection<string> executorUris)
         {
-            if (this.testSessionInfo != null)
-            {
-                // TODO (copoiena): Is returning the proxy to the pool here enough ?
-                TestSessionPool.Instance.ReturnProxy(this.testSessionInfo, this.ProxyOperationManager.Id);
-            }
-
             this.baseTestRunEventsHandler.HandleTestRunComplete(testRunCompleteArgs, lastChunkArgs, runContextAttachments, executorUris);
         }
 

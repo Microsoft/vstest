@@ -174,287 +174,6 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
         }
 
         /// <inheritdoc/>
-        public void InitializeExtensions(IEnumerable<string> pathToAdditionalExtensions)
-        {
-            this.EnsureInitialized();
-
-            this.pathToAdditionalExtensions = pathToAdditionalExtensions.ToList();
-            this.requestSender.InitializeExtensions(this.pathToAdditionalExtensions);
-        }
-
-        /// <inheritdoc/>
-        public void DiscoverTests(
-            IEnumerable<string> sources,
-            string discoverySettings,
-            ITestDiscoveryEventsHandler discoveryEventsHandler)
-        {
-            this.DiscoverTests(
-                sources,
-                discoverySettings,
-                options: null,
-                discoveryEventsHandler: new DiscoveryEventsHandleConverter(discoveryEventsHandler));
-        }
-
-        /// <inheritdoc/>
-        public void DiscoverTests(
-            IEnumerable<string> sources,
-            string discoverySettings,
-            TestPlatformOptions options,
-            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
-        {
-            this.DiscoverTests(
-                sources,
-                discoverySettings,
-                options,
-                testSessionInfo: null,
-                discoveryEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void DiscoverTests(
-            IEnumerable<string> sources,
-            string discoverySettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
-        {
-            this.testPlatformEventSource.TranslationLayerDiscoveryStart();
-            this.EnsureInitialized();
-            // TODO (copoiena): Add session info as a parameter.
-            this.requestSender.DiscoverTests(
-                sources,
-                discoverySettings,
-                options,
-                discoveryEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void CancelDiscovery()
-        {
-            this.requestSender.CancelDiscovery();
-        }
-
-        /// <inheritdoc/>
-        public void RunTests(
-            IEnumerable<string> sources,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            this.RunTests(
-                sources,
-                runSettings,
-                options: null,
-                testRunEventsHandler: testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void RunTests(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            this.RunTests(
-                sources,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler: testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void RunTests(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            var sourceList = sources.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                0,
-                sourceList.Count,
-                0,
-                runSettings ?? string.Empty);
-
-            this.EnsureInitialized();
-            this.requestSender.StartTestRun(
-                sourceList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void RunTests(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            this.RunTests(
-                testCases,
-                runSettings,
-                options: null,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void RunTests(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            this.RunTests(
-                testCases,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void RunTests(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            var testCaseList = testCases.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                0,
-                0,
-                testCaseList.Count,
-                runSettings ?? string.Empty);
-
-            this.EnsureInitialized();
-            this.requestSender.StartTestRun(
-                testCaseList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public void RunTestsWithCustomTestHost(
-            IEnumerable<string> sources,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            this.RunTestsWithCustomTestHost(
-                sources,
-                runSettings,
-                options: null,
-                testRunEventsHandler: testRunEventsHandler,
-                customTestHostLauncher: customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public void RunTestsWithCustomTestHost(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            this.RunTestsWithCustomTestHost(
-                sources,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler: testRunEventsHandler,
-                customTestHostLauncher: customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public void RunTestsWithCustomTestHost(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            var sourceList = sources.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                1,
-                sourceList.Count,
-                0,
-                runSettings ?? string.Empty);
-
-            this.EnsureInitialized();
-            this.requestSender.StartTestRunWithCustomHost(
-                sourceList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public void RunTestsWithCustomTestHost(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            this.RunTestsWithCustomTestHost(
-                testCases,
-                runSettings,
-                options: null,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public void RunTestsWithCustomTestHost(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            this.RunTestsWithCustomTestHost(
-                testCases,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public void RunTestsWithCustomTestHost(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            var testCaseList = testCases.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                1,
-                0,
-                testCaseList.Count,
-                runSettings ?? string.Empty);
-
-            this.EnsureInitialized();
-            this.requestSender.StartTestRunWithCustomHost(
-                testCaseList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
         public ITestSession StartTestSession(
             IList<string> sources,
             string runSettings,
@@ -500,6 +219,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                     options,
                     eventsHandler,
                     testHostLauncher),
+                eventsHandler,
                 this);
         }
 
@@ -514,6 +234,288 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             return this.requestSender.StopTestSession(
                 testSessionInfo,
                 eventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void InitializeExtensions(IEnumerable<string> pathToAdditionalExtensions)
+        {
+            this.EnsureInitialized();
+
+            this.pathToAdditionalExtensions = pathToAdditionalExtensions.ToList();
+            this.requestSender.InitializeExtensions(this.pathToAdditionalExtensions);
+        }
+
+        /// <inheritdoc/>
+        public void DiscoverTests(
+            IEnumerable<string> sources,
+            string discoverySettings,
+            ITestDiscoveryEventsHandler discoveryEventsHandler)
+        {
+            this.DiscoverTests(
+                sources,
+                discoverySettings,
+                options: null,
+                discoveryEventsHandler: new DiscoveryEventsHandleConverter(discoveryEventsHandler));
+        }
+
+        /// <inheritdoc/>
+        public void DiscoverTests(
+            IEnumerable<string> sources,
+            string discoverySettings,
+            TestPlatformOptions options,
+            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
+        {
+            this.DiscoverTests(
+                sources,
+                discoverySettings,
+                options,
+                testSessionInfo: null,
+                discoveryEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void DiscoverTests(
+            IEnumerable<string> sources,
+            string discoverySettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
+        {
+            this.testPlatformEventSource.TranslationLayerDiscoveryStart();
+
+            this.EnsureInitialized();
+            this.requestSender.DiscoverTests(
+                sources,
+                discoverySettings,
+                options,
+                testSessionInfo,
+                discoveryEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void CancelDiscovery()
+        {
+            this.requestSender.CancelDiscovery();
+        }
+
+        /// <inheritdoc/>
+        public void RunTests(
+            IEnumerable<string> sources,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            this.RunTests(
+                sources,
+                runSettings,
+                options: null,
+                testRunEventsHandler: testRunEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void RunTests(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            this.RunTests(
+                sources,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void RunTests(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            var sourceList = sources.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                0,
+                sourceList.Count,
+                0,
+                runSettings ?? string.Empty);
+
+            this.EnsureInitialized();
+            this.requestSender.StartTestRun(
+                sourceList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void RunTests(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            this.RunTests(
+                testCases,
+                runSettings,
+                options: null,
+                testRunEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void RunTests(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            this.RunTests(
+                testCases,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void RunTests(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            var testCaseList = testCases.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                0,
+                0,
+                testCaseList.Count,
+                runSettings ?? string.Empty);
+
+            this.EnsureInitialized();
+            this.requestSender.StartTestRun(
+                testCaseList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler);
+        }
+
+        /// <inheritdoc/>
+        public void RunTestsWithCustomTestHost(
+            IEnumerable<string> sources,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            this.RunTestsWithCustomTestHost(
+                sources,
+                runSettings,
+                options: null,
+                testRunEventsHandler: testRunEventsHandler,
+                customTestHostLauncher: customTestHostLauncher);
+        }
+
+        /// <inheritdoc/>
+        public void RunTestsWithCustomTestHost(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            this.RunTestsWithCustomTestHost(
+                sources,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler,
+                customTestHostLauncher);
+        }
+
+        /// <inheritdoc/>
+        public void RunTestsWithCustomTestHost(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            var sourceList = sources.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                1,
+                sourceList.Count,
+                0,
+                runSettings ?? string.Empty);
+
+            this.EnsureInitialized();
+            this.requestSender.StartTestRunWithCustomHost(
+                sourceList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler,
+                customTestHostLauncher);
+        }
+
+        /// <inheritdoc/>
+        public void RunTestsWithCustomTestHost(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            this.RunTestsWithCustomTestHost(
+                testCases,
+                runSettings,
+                options: null,
+                testRunEventsHandler,
+                customTestHostLauncher);
+        }
+
+        /// <inheritdoc/>
+        public void RunTestsWithCustomTestHost(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            this.RunTestsWithCustomTestHost(
+                testCases,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler,
+                customTestHostLauncher);
+        }
+
+        /// <inheritdoc/>
+        public void RunTestsWithCustomTestHost(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            var testCaseList = testCases.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                1,
+                0,
+                testCaseList.Count,
+                runSettings ?? string.Empty);
+
+            this.EnsureInitialized();
+            this.requestSender.StartTestRunWithCustomHost(
+                testCaseList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler,
+                customTestHostLauncher);
         }
 
         /// <inheritdoc/>
@@ -555,7 +557,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
 
             var timeout = EnvironmentHelper.GetConnectionTimeout();
             // Start communication
-            var port = await this.requestSender.InitializeCommunicationAsync(timeout * 1000);
+            var port = await this.requestSender.InitializeCommunicationAsync(timeout * 1000).ConfigureAwait(false);
 
             if (port > 0)
             {
@@ -572,281 +574,6 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 this.requestSender.Close();
                 throw new TransationLayerException("Error hosting communication channel and connecting to console");
             }
-        }
-
-        /// <inheritdoc/>
-        public async Task InitializeExtensionsAsync(IEnumerable<string> pathToAdditionalExtensions)
-        {
-            await this.EnsureInitializedAsync();
-            this.pathToAdditionalExtensions = pathToAdditionalExtensions.ToList();
-            this.requestSender.InitializeExtensions(this.pathToAdditionalExtensions);
-        }
-
-        /// <inheritdoc/>
-        public async Task DiscoverTestsAsync(
-            IEnumerable<string> sources,
-            string discoverySettings,
-            ITestDiscoveryEventsHandler discoveryEventsHandler)
-        {
-            await this.DiscoverTestsAsync(
-                sources,
-                discoverySettings,
-                options: null,
-                discoveryEventsHandler: new DiscoveryEventsHandleConverter(discoveryEventsHandler));
-        }
-
-
-        /// <inheritdoc/>
-        public async Task DiscoverTestsAsync(
-            IEnumerable<string> sources,
-            string discoverySettings,
-            TestPlatformOptions options,
-            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
-        {
-            await this.DiscoverTestsAsync(
-                sources,
-                discoverySettings,
-                options,
-                testSessionInfo: null,
-                discoveryEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task DiscoverTestsAsync(
-            IEnumerable<string> sources,
-            string discoverySettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
-        {
-            this.testPlatformEventSource.TranslationLayerDiscoveryStart();
-            await this.EnsureInitializedAsync();
-            await this.requestSender.DiscoverTestsAsync(
-                sources,
-                discoverySettings,
-                options,
-                // TODO(copoiena): Add session info as a parameter.
-                discoveryEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsAsync(
-            IEnumerable<string> sources,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            await this.RunTestsAsync(
-                sources,
-                runSettings,
-                options: null,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsAsync(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            await this.RunTestsAsync(
-                sources,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsAsync(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            var sourceList = sources.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                0,
-                sourceList.Count,
-                0,
-                runSettings ?? string.Empty);
-
-            await this.EnsureInitializedAsync();
-            await this.requestSender.StartTestRunAsync(
-                sourceList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsAsync(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            await this.RunTestsAsync(
-                testCases,
-                runSettings,
-                options: null,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsAsync(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            await this.RunTestsAsync(
-                testCases,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsAsync(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler)
-        {
-            var testCaseList = testCases.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                0,
-                0,
-                testCaseList.Count,
-                runSettings ?? string.Empty);
-
-            await this.EnsureInitializedAsync();
-            await this.requestSender.StartTestRunAsync(
-                testCaseList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsWithCustomTestHostAsync(
-            IEnumerable<string> sources,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            await this.RunTestsWithCustomTestHostAsync(
-                sources,
-                runSettings,
-                options: null,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsWithCustomTestHostAsync(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            await this.RunTestsWithCustomTestHostAsync(
-                sources,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsWithCustomTestHostAsync(
-            IEnumerable<string> sources,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            var sourceList = sources.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                1,
-                sourceList.Count,
-                0,
-                runSettings ?? string.Empty);
-
-            await this.EnsureInitializedAsync();
-            await this.requestSender.StartTestRunWithCustomHostAsync(
-                sourceList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsWithCustomTestHostAsync(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            await this.RunTestsWithCustomTestHostAsync(
-                testCases,
-                runSettings,
-                options: null,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsWithCustomTestHostAsync(
-            IEnumerable<TestCase> testCases,
-            string runSettings, 
-            TestPlatformOptions options,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            await this.RunTestsWithCustomTestHostAsync(
-                testCases,
-                runSettings,
-                options,
-                testSessionInfo: null,
-                testRunEventsHandler,
-                customTestHostLauncher);
-        }
-
-        /// <inheritdoc/>
-        public async Task RunTestsWithCustomTestHostAsync(
-            IEnumerable<TestCase> testCases,
-            string runSettings,
-            TestPlatformOptions options,
-            TestSessionInfo testSessionInfo,
-            ITestRunEventsHandler testRunEventsHandler,
-            ITestHostLauncher customTestHostLauncher)
-        {
-            var testCaseList = testCases.ToList();
-            this.testPlatformEventSource.TranslationLayerExecutionStart(
-                1,
-                0,
-                testCaseList.Count,
-                runSettings ?? string.Empty);
-
-            await this.EnsureInitializedAsync();
-            await this.requestSender.StartTestRunWithCustomHostAsync(
-                testCaseList,
-                runSettings,
-                options,
-                testSessionInfo,
-                testRunEventsHandler,
-                customTestHostLauncher);
         }
 
         /// <inheritdoc/>
@@ -870,11 +597,11 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             ITestSessionEventsHandler eventsHandler)
         {
             return await this.StartTestSessionAsync(
-                   sources,
-                   runSettings,
-                   options: null,
-                   eventsHandler,
-                   testHostLauncher: null).ConfigureAwait(false);
+                sources,
+                runSettings,
+                options: null,
+                eventsHandler,
+                testHostLauncher: null).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -895,6 +622,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                     options,
                     eventsHandler,
                     testHostLauncher).ConfigureAwait(false),
+                eventsHandler,
                 this);
         }
 
@@ -909,6 +637,283 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             return await this.requestSender.StopTestSessionAsync(
                 testSessionInfo,
                 eventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task InitializeExtensionsAsync(IEnumerable<string> pathToAdditionalExtensions)
+        {
+            await this.EnsureInitializedAsync().ConfigureAwait(false);
+            this.pathToAdditionalExtensions = pathToAdditionalExtensions.ToList();
+            this.requestSender.InitializeExtensions(this.pathToAdditionalExtensions);
+        }
+
+        /// <inheritdoc/>
+        public async Task DiscoverTestsAsync(
+            IEnumerable<string> sources,
+            string discoverySettings,
+            ITestDiscoveryEventsHandler discoveryEventsHandler)
+        {
+            await this.DiscoverTestsAsync(
+                    sources,
+                    discoverySettings,
+                    options: null,
+                    discoveryEventsHandler: new DiscoveryEventsHandleConverter(discoveryEventsHandler))
+                .ConfigureAwait(false);
+        }
+
+
+        /// <inheritdoc/>
+        public async Task DiscoverTestsAsync(
+            IEnumerable<string> sources,
+            string discoverySettings,
+            TestPlatformOptions options,
+            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
+        {
+            await this.DiscoverTestsAsync(
+                sources,
+                discoverySettings,
+                options,
+                testSessionInfo: null,
+                discoveryEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task DiscoverTestsAsync(
+            IEnumerable<string> sources,
+            string discoverySettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestDiscoveryEventsHandler2 discoveryEventsHandler)
+        {
+            this.testPlatformEventSource.TranslationLayerDiscoveryStart();
+
+            await this.EnsureInitializedAsync().ConfigureAwait(false);
+            await this.requestSender.DiscoverTestsAsync(
+                sources,
+                discoverySettings,
+                options,
+                testSessionInfo,
+                discoveryEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsAsync(
+            IEnumerable<string> sources,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            await this.RunTestsAsync(
+                sources,
+                runSettings,
+                options: null,
+                testRunEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsAsync(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            await this.RunTestsAsync(
+                sources,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsAsync(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            var sourceList = sources.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                0,
+                sourceList.Count,
+                0,
+                runSettings ?? string.Empty);
+
+            await this.EnsureInitializedAsync().ConfigureAwait(false);
+            await this.requestSender.StartTestRunAsync(
+                sourceList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsAsync(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            await this.RunTestsAsync(
+                testCases,
+                runSettings,
+                options: null,
+                testRunEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsAsync(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            await this.RunTestsAsync(
+                testCases,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsAsync(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler)
+        {
+            var testCaseList = testCases.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                0,
+                0,
+                testCaseList.Count,
+                runSettings ?? string.Empty);
+
+            await this.EnsureInitializedAsync().ConfigureAwait(false);
+            await this.requestSender.StartTestRunAsync(
+                testCaseList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsWithCustomTestHostAsync(
+            IEnumerable<string> sources,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            await this.RunTestsWithCustomTestHostAsync(
+                sources,
+                runSettings,
+                options: null,
+                testRunEventsHandler,
+                customTestHostLauncher).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsWithCustomTestHostAsync(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            await this.RunTestsWithCustomTestHostAsync(
+                sources,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler,
+                customTestHostLauncher).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsWithCustomTestHostAsync(
+            IEnumerable<string> sources,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            var sourceList = sources.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                1,
+                sourceList.Count,
+                0,
+                runSettings ?? string.Empty);
+
+            await this.EnsureInitializedAsync().ConfigureAwait(false);
+            await this.requestSender.StartTestRunWithCustomHostAsync(
+                sourceList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler,
+                customTestHostLauncher).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsWithCustomTestHostAsync(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            await this.RunTestsWithCustomTestHostAsync(
+                testCases,
+                runSettings,
+                options: null,
+                testRunEventsHandler,
+                customTestHostLauncher).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsWithCustomTestHostAsync(
+            IEnumerable<TestCase> testCases,
+            string runSettings, 
+            TestPlatformOptions options,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            await this.RunTestsWithCustomTestHostAsync(
+                testCases,
+                runSettings,
+                options,
+                testSessionInfo: null,
+                testRunEventsHandler,
+                customTestHostLauncher).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task RunTestsWithCustomTestHostAsync(
+            IEnumerable<TestCase> testCases,
+            string runSettings,
+            TestPlatformOptions options,
+            TestSessionInfo testSessionInfo,
+            ITestRunEventsHandler testRunEventsHandler,
+            ITestHostLauncher customTestHostLauncher)
+        {
+            var testCaseList = testCases.ToList();
+            this.testPlatformEventSource.TranslationLayerExecutionStart(
+                1,
+                0,
+                testCaseList.Count,
+                runSettings ?? string.Empty);
+
+            await this.EnsureInitializedAsync().ConfigureAwait(false);
+            await this.requestSender.StartTestRunWithCustomHostAsync(
+                testCaseList,
+                runSettings,
+                options,
+                testSessionInfo,
+                testRunEventsHandler,
+                customTestHostLauncher).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -959,7 +964,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             if (!this.vstestConsoleProcessManager.IsProcessInitialized())
             {
                 EqtTrace.Info("VsTestConsoleWrapper.EnsureInitializedAsync: Process is not started.");
-                await this.StartSessionAsync();
+                await this.StartSessionAsync().ConfigureAwait(false);
 
                 EqtTrace.Info("VsTestConsoleWrapper.EnsureInitializedAsync: Send a request to initialize extensions.");
                 this.requestSender.InitializeExtensions(this.pathToAdditionalExtensions);

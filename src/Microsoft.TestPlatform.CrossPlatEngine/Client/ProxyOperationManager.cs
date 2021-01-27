@@ -120,6 +120,12 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
         /// Gets or sets the cancellation token source.
         /// </summary>
         public CancellationTokenSource CancellationTokenSource { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if the test request sender communication channel should
+        /// be closed when the proxy operation manager is closed.
+        /// </summary>
+        public bool CloseRequestSenderChannelOnProxyClose { get; set; } = false;
         #endregion
 
         #region IProxyOperationManager implementation.
@@ -213,10 +219,9 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
             try
             {
                 // Launch the test host.
-                var hostLaunchedTask = this.TestHostManager.LaunchTestHostAsync(
+                this.testHostLaunched = this.TestHostManager.LaunchTestHostAsync(
                     testHostStartInfo,
-                    this.CancellationTokenSource.Token);
-                this.testHostLaunched = hostLaunchedTask.Result;
+                    this.CancellationTokenSource.Token).Result;
 
                 if (this.testHostLaunched && testHostConnectionInfo.Role == ConnectionRole.Host)
                 {
@@ -239,9 +244,11 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
             var hostDebugEnabled = Environment.GetEnvironmentVariable("VSTEST_HOST_DEBUG");
             var nativeHostDebugEnabled = Environment.GetEnvironmentVariable("VSTEST_HOST_NATIVE_DEBUG");
 
-            if (!string.IsNullOrEmpty(hostDebugEnabled) && hostDebugEnabled.Equals("1", StringComparison.Ordinal) ||
-                new PlatformEnvironment().OperatingSystem.Equals(PlatformOperatingSystem.Windows) &&
-                !string.IsNullOrEmpty(nativeHostDebugEnabled) && nativeHostDebugEnabled.Equals("1", StringComparison.Ordinal))
+            if ((!string.IsNullOrEmpty(hostDebugEnabled)
+                    && hostDebugEnabled.Equals("1", StringComparison.Ordinal))
+                || (new PlatformEnvironment().OperatingSystem.Equals(PlatformOperatingSystem.Windows)
+                    && !string.IsNullOrEmpty(nativeHostDebugEnabled)
+                    && nativeHostDebugEnabled.Equals("1", StringComparison.Ordinal)))
             {
                 ConsoleOutput.Instance.WriteLine(
                     CrossPlatEngineResources.HostDebuggerWarning,
@@ -259,8 +266,8 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
             }
 
             // If test host does not launch then throw exception, otherwise wait for connection.
-            if (!this.testHostLaunched ||
-                !this.RequestSender.WaitForRequestHandlerConnection(
+            if (!this.testHostLaunched
+                || !this.RequestSender.WaitForRequestHandlerConnection(
                     connTimeout * 1000,
                     this.CancellationTokenSource.Token))
             {
@@ -281,7 +288,6 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
             // Older test hosts are not aware of protocol version check, hence we should not be
             // sending VersionCheck message to these test hosts.
             this.CompatIssueWithVersionCheckAndRunsettings();
-
             if (this.versionCheckRequired)
             {
                 this.RequestSender.CheckVersionWithTestHost();
@@ -309,6 +315,22 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
                     var timeout = 100;
                     EqtTrace.Verbose("ProxyOperationManager.Close: waiting for test host to exit for {0} ms", timeout);
                     this.testHostExited.Wait(timeout);
+
+                    // In compatibility mode (no test session used) we don't share the testhost
+                    // between test discovery and test run. The testhost is closed upon
+                    // successfully completing the operation it was spawned for, and so the test
+                    // request sender communication channel is closed then as well. As such, it's
+                    // not a good idea to double close the communication channel here.
+                    //
+                    // In contrast, the new workflow (using test sessions) means we should keep
+                    // the testhost alive until explicitly closed by the test session owner. For
+                    // this we supressed the normal test request sender close and we have to close
+                    // that communication channel here.
+                    if (this.CloseRequestSenderChannelOnProxyClose)
+                    {
+                        // Closing the communication channel.
+                        this.RequestSender.Close();
+                    }
                 }
             }
             catch (Exception ex)
@@ -319,15 +341,19 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
             }
             finally
             {
-                this.initialized = false;
+                // Should only cleanup the testhost if we're in compatibility mode.
+                if (this.CloseRequestSenderChannelOnProxyClose)
+                {
+                    this.initialized = false;
 
-                EqtTrace.Warning("ProxyOperationManager: Timed out waiting for test host to exit. Will terminate process.");
+                    EqtTrace.Warning("ProxyOperationManager: Timed out waiting for test host to exit. Will terminate process.");
 
-                // Please clean up test host.
-                this.TestHostManager.CleanTestHostAsync(CancellationToken.None).Wait();
+                    // Please clean up test host.
+                    this.TestHostManager.CleanTestHostAsync(CancellationToken.None).Wait();
 
-                this.TestHostManager.HostExited -= this.TestHostManagerHostExited;
-                this.TestHostManager.HostLaunched -= this.TestHostManagerHostLaunched;
+                    this.TestHostManager.HostExited -= this.TestHostManagerHostExited;
+                    this.TestHostManager.HostLaunched -= this.TestHostManagerHostLaunched;
+                }
             }
         }
 
@@ -346,6 +372,7 @@ namespace Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client
         /// </returns>
         public virtual TestProcessStartInfo UpdateTestProcessStartInfo(TestProcessStartInfo testProcessStartInfo)
         {
+            // TODO (copoiena): If called and testhost is already running, we should restart.
             if (this.baseProxy == null)
             {
                 // Update Telemetry Opt in status because by default in Test Host Telemetry is opted out

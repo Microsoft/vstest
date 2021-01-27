@@ -3,6 +3,7 @@
 
 namespace Microsoft.VisualStudio.TestPlatform.VsTestConsole.TranslationLayer.Interfaces
 {
+    using System;
     using System.Collections.Generic;
 
     using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -13,7 +14,7 @@ namespace Microsoft.VisualStudio.TestPlatform.VsTestConsole.TranslationLayer.Int
     /// Defines a test session that can be used to make calls to the vstest.console
     /// process.
     /// </summary>
-    public interface ITestSession : ITestSessionAsync
+    public interface ITestSession : IDisposable, ITestSessionAsync
     {
         /// <summary>
         /// Starts test discovery.
@@ -157,6 +158,13 @@ namespace Microsoft.VisualStudio.TestPlatform.VsTestConsole.TranslationLayer.Int
             TestPlatformOptions options,
             ITestRunEventsHandler testRunEventsHandler,
             ITestHostLauncher customTestHostLauncher);
+
+        /// <summary>
+        /// Stops the test session.
+        /// </summary>
+        /// 
+        /// <returns>True if the session was successfuly stopped, false otherwise.</returns>
+        bool StopTestSession();
 
         /// <summary>
         /// Stops the test session.

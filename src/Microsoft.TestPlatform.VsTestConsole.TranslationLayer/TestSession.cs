@@ -3,9 +3,11 @@
 
 namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
     using Microsoft.VisualStudio.TestPlatform.ObjectModel;
     using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
     using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
@@ -17,8 +19,11 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
     /// </summary>
     public class TestSession : ITestSession
     {
+        private bool disposed = false;
+
         private TestSessionInfo testSessionInfo;
-        private VsTestConsoleWrapper consoleWrapper;
+        private readonly ITestSessionEventsHandler eventsHandler;
+        private readonly IVsTestConsoleWrapper consoleWrapper;
 
         #region Constructors
         /// <summary>
@@ -26,13 +31,46 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
         /// </summary>
         /// 
         /// <param name="testSessionInfo">The test session info object.</param>
+        /// <param name="eventsHandler">The session event handler.</param>
         /// <param name="consoleWrapper">The encapsulated console wrapper.</param>
         public TestSession(
             TestSessionInfo testSessionInfo,
-            VsTestConsoleWrapper consoleWrapper)
+            ITestSessionEventsHandler eventsHandler,
+            IVsTestConsoleWrapper consoleWrapper)
         {
             this.testSessionInfo = testSessionInfo;
+            this.eventsHandler = eventsHandler;
             this.consoleWrapper = consoleWrapper;
+        }
+
+        /// <summary>
+        /// Destroys the current instance of the <see cref="TestSession"/> class.
+        /// </summary>
+        ~TestSession() => this.Dispose(false);
+
+        /// <summary>
+        /// Disposes of the current instance of the <see cref="TestSession"/> class.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes of the current instance of the <see cref="TestSession"/> class.
+        /// </summary>
+        /// 
+        /// <param name="disposing">Indicates if managed resources should be disposed.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.disposed)
+            {
+                return;
+            }
+
+            this.StopTestSession();
+            this.disposed = true;
         }
         #endregion
 
@@ -75,11 +113,11 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             TestPlatformOptions options,
             ITestDiscoveryEventsHandler2 discoveryEventsHandler)
         {
-            // TODO (copoiena): Hook into the wrapper and pass session info here.
             this.consoleWrapper.DiscoverTests(
                 sources,
                 discoverySettings,
                 options,
+                this.testSessionInfo,
                 discoveryEventsHandler);
         }
 
@@ -204,11 +242,29 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
         }
 
         /// <inheritdoc/>
+        public bool StopTestSession()
+        {
+            return this.StopTestSession(this.eventsHandler);
+        }
+
+        /// <inheritdoc/>
         public bool StopTestSession(ITestSessionEventsHandler eventsHandler)
         {
-            return this.consoleWrapper.StopTestSession(
-                this.testSessionInfo,
-                eventsHandler);
+            if (this.testSessionInfo == null)
+            {
+                return true;
+            }
+
+            try
+            {
+                return this.consoleWrapper.StopTestSession(
+                    this.testSessionInfo,
+                    eventsHandler);
+            }
+            finally
+            {
+                this.testSessionInfo = null;
+            }
         }
         #endregion
 
@@ -220,10 +276,12 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             ITestDiscoveryEventsHandler discoveryEventsHandler)
         {
             await this.DiscoverTestsAsync(
-                sources,
-                discoverySettings,
-                options: null,
-                discoveryEventsHandler: new DiscoveryEventsHandleConverter(discoveryEventsHandler));
+                    sources,
+                    discoverySettings,
+                    options: null,
+                    discoveryEventsHandler:
+                        new DiscoveryEventsHandleConverter(discoveryEventsHandler))
+                .ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -233,12 +291,12 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
             TestPlatformOptions options,
             ITestDiscoveryEventsHandler2 discoveryEventsHandler)
         {
-            // TODO (copoiena): Hook into the wrapper and pass session info here.
             await this.consoleWrapper.DiscoverTestsAsync(
                 sources,
                 discoverySettings,
                 options,
-                discoveryEventsHandler);
+                this.testSessionInfo,
+                discoveryEventsHandler).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -251,7 +309,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 sources,
                 runSettings,
                 options: null,
-                testRunEventsHandler);
+                testRunEventsHandler).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -266,7 +324,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 runSettings,
                 options,
                 this.testSessionInfo,
-                testRunEventsHandler);
+                testRunEventsHandler).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -279,7 +337,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 testCases,
                 runSettings,
                 options: null,
-                testRunEventsHandler);
+                testRunEventsHandler).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -294,7 +352,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 runSettings,
                 options,
                 this.testSessionInfo,
-                testRunEventsHandler);
+                testRunEventsHandler).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -309,7 +367,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 runSettings,
                 options: null,
                 testRunEventsHandler,
-                customTestHostLauncher);
+                customTestHostLauncher).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -326,7 +384,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 options,
                 this.testSessionInfo,
                 testRunEventsHandler,
-                customTestHostLauncher);
+                customTestHostLauncher).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -341,7 +399,7 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 runSettings,
                 options: null,
                 testRunEventsHandler,
-                customTestHostLauncher);
+                customTestHostLauncher).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
@@ -358,15 +416,33 @@ namespace Microsoft.TestPlatform.VsTestConsole.TranslationLayer
                 options,
                 this.testSessionInfo,
                 testRunEventsHandler,
-                customTestHostLauncher);
+                customTestHostLauncher).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> StopTestSessionAsync()
+        {
+            return await this.StopTestSessionAsync(this.eventsHandler).ConfigureAwait(false);
         }
 
         /// <inheritdoc/>
         public async Task<bool> StopTestSessionAsync(ITestSessionEventsHandler eventsHandler)
         {
-            return await this.consoleWrapper.StopTestSessionAsync(
-                this.testSessionInfo,
-                eventsHandler);
+            if (this.testSessionInfo == null)
+            {
+                return true;
+            }
+
+            try
+            {
+                return await this.consoleWrapper.StopTestSessionAsync(
+                    this.testSessionInfo,
+                    eventsHandler).ConfigureAwait(false);
+            }
+            finally
+            {
+                this.testSessionInfo = null;
+            }
         }
         #endregion
     }
