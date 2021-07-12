@@ -29,6 +29,29 @@ namespace Microsoft.VisualStudio.TestPlatform.ObjectModel.Utilities
         {
             get
             {
+#if !NETSTANDARD1_4
+                try
+                {
+                    // use the new IsWow64Process2 to detect ARM64 as well.
+                    var processHandle = System.Diagnostics.Process.GetCurrentProcess().Handle;
+                    if (IsWow64Process2(processHandle, out ImageFileMachine pProcessMachinem, out ImageFileMachine pNativeMachine))
+                    {
+                        switch (pNativeMachine)
+                        {
+                            case ImageFileMachine.AMD64:
+                            case ImageFileMachine.IA64:
+                                return Architecture.X64;
+                            case ImageFileMachine.X86:
+                                return Architecture.X86;
+                            case ImageFileMachine.ARM:
+                                return Architecture.ARM;
+                            case ImageFileMachine.ARM64:
+                                return Architecture.ARM64;
+                        }
+                    }
+                }
+                catch { }
+#endif
                 var arch = new PlatformEnvironment().Architecture;
 
                 switch (arch)
@@ -37,11 +60,25 @@ namespace Microsoft.VisualStudio.TestPlatform.ObjectModel.Utilities
                         return ObjectModel.Architecture.X64;
                     case PlatformArchitecture.X86:
                         return ObjectModel.Architecture.X86;
+                    case PlatformArchitecture.ARM64:
+                        return ObjectModel.Architecture.ARM64;
                     default:
                         return ObjectModel.Architecture.ARM;
                 }
             }
         }
+#if !NETSTANDARD1_4
+        private enum ImageFileMachine : ushort
+        {
+            X86 = 0x014c,
+            ARM = 0x01c0,
+            IA64 = 0x0200,
+            AMD64 = 0x8664,
+            ARM64 = 0xAA64
+        }
+        [System.Runtime.InteropServices.DllImport("kernel32")]
+        private static extern bool IsWow64Process2([System.Runtime.InteropServices.In] IntPtr processHandle, [System.Runtime.InteropServices.Out] out ImageFileMachine pProcessMachinem, [System.Runtime.InteropServices.Out] out ImageFileMachine pNativeMachine);
+#endif
 
         /// <summary>
         /// Gets the settings to be used while creating XmlReader for runsettings.
